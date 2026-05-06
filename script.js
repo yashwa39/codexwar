@@ -1,25 +1,36 @@
-const STORE = "kyberArchiveData";
-const TRACKS = {
-  ambient: { id: "iotqjyuoi-Y", name: "Analog Drone Loop" },
-  battle: { id: "FHuD5y-PZM0", name: "Battle Signal" },
-};
+const TRACKS = { ambient: "iotqjyuoi-Y", dark: "vsMWVW4xtwI" };
 let ytPlayer;
+let currentView = "personnel";
+let viewStart = Date.now();
 let idleSince = Date.now();
+let typed = "";
+let rapid = [];
 
-function initialData() {
-  return { pages: [], transmissions: [], booted: false };
+const characters = [
+  { name: "Luke Skywalker", side: "jedi", home: "Tatooine", faction: "Rebel Alliance" },
+  { name: "Darth Vader", side: "sith", home: "Tatooine", faction: "Galactic Empire" },
+  { name: "Leia Organa", side: "neutral", home: "Alderaan", faction: "Rebel Alliance" },
+  { name: "Obi-Wan Kenobi", side: "jedi", home: "Stewjon", faction: "Jedi Order" },
+  { name: "Palpatine", side: "sith", home: "Naboo", faction: "Sith/Empire" },
+];
+
+function tone(freq = 440, duration = 0.06, gainVal = 0.018) {
+  const ctx = window.__aCtx || (window.__aCtx = new AudioContext());
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.value = freq;
+  gain.gain.value = gainVal;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + duration);
 }
 
-function getData() {
-  try {
-    return JSON.parse(localStorage.getItem(STORE)) || initialData();
-  } catch {
-    return initialData();
-  }
-}
-
-function setData(next) {
-  localStorage.setItem(STORE, JSON.stringify(next));
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2400);
 }
 
 function setupStarfield() {
@@ -33,7 +44,6 @@ function setupStarfield() {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       z: Math.random() * 2 + 0.5,
-      a: Math.random() * 0.9 + 0.1,
       s: Math.random() * 0.25 + 0.05,
     }));
   };
@@ -42,7 +52,7 @@ function setupStarfield() {
     stars.forEach((st) => {
       st.x += st.s * st.z;
       if (st.x > canvas.width + 2) st.x = -2;
-      ctx.fillStyle = `rgba(232,232,255,${st.a})`;
+      ctx.fillStyle = `rgba(232,232,255,${0.15 + st.z / 3})`;
       ctx.fillRect(st.x, st.y, st.z, st.z);
     });
     requestAnimationFrame(draw);
@@ -52,276 +62,189 @@ function setupStarfield() {
   addEventListener("resize", resize);
 }
 
-function toast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 2400);
-}
-
-function uid() {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function typeLine(node, text, speed = 32, done) {
-  node.textContent = "";
+function setupBoot() {
+  const boot = document.getElementById("boot");
+  const line = document.getElementById("bootLine");
+  const text = "> DECRYPTING WHILLS DATACORE...";
   let i = 0;
-  const t = setInterval(() => {
-    node.textContent += text[i] || "";
-    typeClack();
+  const timer = setInterval(() => {
+    line.textContent += text[i] || "";
+    tone(760, 0.02, 0.01);
     i += 1;
     if (i >= text.length) {
-      clearInterval(t);
-      if (done) done();
-    }
-  }, speed);
-}
-
-function analogWhine() {
-  const ctx = window.__audioCtx || (window.__audioCtx = new AudioContext());
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = "sawtooth";
-  osc.frequency.setValueAtTime(110, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(1800, ctx.currentTime + 0.7);
-  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.04, ctx.currentTime + 0.04);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.8);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  osc.stop(ctx.currentTime + 0.85);
-}
-
-function typeClack() {
-  const ctx = window.__audioCtx || (window.__audioCtx = new AudioContext());
-  const noise = ctx.createBufferSource();
-  const buffer = ctx.createBuffer(1, 600, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * 0.17;
-  noise.buffer = buffer;
-  const gain = ctx.createGain();
-  gain.gain.value = 0.02;
-  noise.connect(gain);
-  gain.connect(ctx.destination);
-  noise.start();
-}
-
-function tapeHiss(volume = 0.008, len = 0.08) {
-  const ctx = window.__audioCtx || (window.__audioCtx = new AudioContext());
-  const noise = ctx.createBufferSource();
-  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * 0.4;
-  noise.buffer = buffer;
-  const filter = ctx.createBiquadFilter();
-  filter.type = "highpass";
-  filter.frequency.value = 4000;
-  const gain = ctx.createGain();
-  gain.gain.value = volume;
-  noise.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-  noise.start();
-}
-
-function setupBoot() {
-  const data = getData();
-  const boot = document.getElementById("boot");
-  if (data.booted) {
-    boot.style.display = "none";
-    return;
-  }
-  typeLine(document.getElementById("bootLine"), "> MOUNTING TAPE VOLUME: WHILLS_ARCHIVE.DAT...", 42, () => {
-    analogWhine();
-    setTimeout(() => {
-      document.getElementById("flash").classList.add("on");
+      clearInterval(timer);
+      animateBootSphere();
       setTimeout(() => {
-        boot.style.display = "none";
-        const d = getData();
-        d.booted = true;
-        setData(d);
-      }, 360);
-    }, 2200);
-  });
-  document.getElementById("skipBoot").onclick = () => {
-    boot.style.display = "none";
-    data.booted = true;
-    setData(data);
-  };
+        document.getElementById("flash").classList.add("on");
+        setTimeout(() => { boot.style.display = "none"; }, 300);
+      }, 1600);
+    }
+  }, 35);
+  document.getElementById("skipBoot").onclick = () => { boot.style.display = "none"; };
 }
 
-function switchView(id) {
+function animateBootSphere() {
+  const c = document.getElementById("deathStarBoot");
+  const ctx = c.getContext("2d");
+  let t = 0;
+  const draw = () => {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.strokeStyle = "#1ceb58";
+    for (let i = 0; i < 24; i += 1) {
+      const a = (i / 24) * Math.PI * 2 + t;
+      const r = 65 + Math.sin(t * 2 + i) * 5;
+      const x = c.width / 2 + Math.cos(a) * r;
+      const y = c.height / 2 + Math.sin(a) * r * 0.6;
+      ctx.beginPath();
+      ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    t += 0.03;
+    if (document.getElementById("boot").style.display !== "none") requestAnimationFrame(draw);
+  };
+  draw();
+}
+
+function setView(id) {
   document.querySelectorAll(".viewport").forEach((v) => v.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   document.querySelector(`.nav-btn[data-view="${id}"]`).classList.add("active");
-  playTrack(id === "schematics" ? "battle" : "ambient");
+  currentView = id;
+  viewStart = Date.now();
+  if (id === "census") setTimeout(() => { if (currentView === "census") playTrack("dark"); }, 30000);
+  else playTrack("ambient");
 }
 
-function setupNav() {
-  document.querySelectorAll(".nav-btn").forEach((btn) => {
-    btn.addEventListener("mouseenter", () => tapeHiss(0.015, 0.1));
-    btn.onclick = () => switchView(btn.dataset.view);
+function renderPersonnel() {
+  const grid = document.getElementById("personnelGrid");
+  grid.innerHTML = "";
+  characters.forEach((c) => {
+    const card = document.createElement("article");
+    card.className = "datacard";
+    card.innerHTML = `<div class="portrait"></div><h3>${c.name}</h3><small>${c.faction}</small>`;
+    card.onclick = () => openPersonnel(c);
+    grid.appendChild(card);
   });
 }
 
-function saveMythosPage() {
-  const title = document.getElementById("mythosTitle").value.trim() || "Untitled Page";
-  const text = document.getElementById("mythosText").value.trim();
-  if (!text) return toast("Archive page requires text.");
-  const data = getData();
-  data.pages.unshift({ id: uid(), title, text, created: new Date().toISOString() });
-  setData(data);
-  document.getElementById("mythosTitle").value = "";
-  document.getElementById("mythosText").value = "";
-  renderPages();
-  toast("PAGE STAMPED TO ARCHIVE");
+function openPersonnel(c) {
+  document.getElementById("overlayName").textContent = c.name;
+  document.getElementById("overlayMeta").textContent = `${c.home} • ${c.faction}`;
+  document.getElementById("overlayLore").textContent =
+    `${c.name} remains a volatile force in galactic memory. Rebel analysts describe this figure as a fracture point between myth and propaganda, where private choices reshape public history.`;
+  document.getElementById("personnelOverlay").classList.remove("hidden");
 }
 
-function renderPages() {
-  const data = getData();
-  const wrap = document.getElementById("mythosPages");
-  wrap.innerHTML = "";
-  if (!data.pages.length) {
-    wrap.innerHTML = `<article class="page">No pages yet. Start the legend.</article>`;
-    return;
-  }
-  data.pages.forEach((p) => {
+function setupBloodlines() {
+  const svg = d3.select("#bloodlineGraph");
+  const nodes = [
+    { id: "Anakin", side: "sith" }, { id: "Padme", side: "neutral" }, { id: "Luke", side: "jedi" },
+    { id: "Leia", side: "jedi" }, { id: "Palpatine", side: "sith" },
+  ];
+  const links = [{ source: "Anakin", target: "Luke" }, { source: "Anakin", target: "Leia" }, { source: "Padme", target: "Luke" }, { source: "Padme", target: "Leia" }, { source: "Palpatine", target: "Anakin" }];
+  const sim = d3.forceSimulation(nodes).force("link", d3.forceLink(links).id((d) => d.id).distance(130)).force("charge", d3.forceManyBody().strength(-250)).force("center", d3.forceCenter(450, 210));
+  const link = svg.selectAll(".link").data(links).join("line").attr("class", "link");
+  link.on("click", () => { tone(120, 0.2, 0.03); tone(90, 0.2, 0.02); toast("I am your father."); });
+  const node = svg.selectAll(".node").data(nodes).join("g").attr("class", "node").call(d3.drag().on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }).on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; }).on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+  node.append("circle").attr("r", 18).attr("fill", (d) => (d.side === "sith" ? "#ff2a2a" : d.side === "jedi" ? "#00ffff" : "#eaddcd"));
+  node.append("text").attr("dy", 4).attr("text-anchor", "middle").attr("fill", "#001300").text((d) => d.id);
+  sim.on("tick", () => {
+    link.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y).attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
+    node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+  });
+}
+
+function setupArmory() {
+  const layers = [...document.querySelectorAll(".hilt-layer")];
+  gsap.fromTo(layers, { x: -120, opacity: 0 }, { x: 0, opacity: 1, stagger: 0.1, duration: 0.6 });
+  document.querySelectorAll(".crystal").forEach((c) => {
+    c.onclick = () => {
+      const mode = c.dataset.crystal;
+      const lore = { green: "Consular. Harmony. Focus.", purple: "Mace Windu. Balance at the edge.", red: "Bled crystal. Pain. Subjugation." };
+      document.getElementById("crystalLore").textContent = lore[mode];
+      document.body.classList.toggle("red-alert", mode === "red");
+      tone(mode === "red" ? 90 : 380, 0.12, 0.03);
+    };
+  });
+}
+
+function renderCensus() {
+  const wrap = document.getElementById("factionCarousel");
+  ["Galactic Republic", "Sith Empire", "Mandalorians", "Wookiees", "Twi'leks", "Rebel Alliance", "Galactic Empire"].forEach((f) => {
     const card = document.createElement("article");
-    card.className = "page";
-    card.innerHTML = `<h3>${p.title}</h3><p>${p.text}</p><small>${new Date(p.created).toLocaleString()}</small>`;
+    card.className = "poster";
+    card.innerHTML = `<div class="mock"></div><h3>${f}</h3><p>Socio-political archive briefing.</p>`;
     wrap.appendChild(card);
   });
-}
-
-function setupSchematics() {
-  const info = document.getElementById("partInfo");
-  document.querySelectorAll("#shipSvg [data-part]").forEach((part) => {
-    part.addEventListener("mouseenter", () => {
-      info.textContent = part.dataset.part;
-      info.classList.add("glitch");
-      setTimeout(() => info.classList.remove("glitch"), 130);
-      tapeHiss(0.012, 0.06);
+  document.getElementById("order66Btn").onclick = () => {
+    document.querySelectorAll(".datacard").forEach((card) => {
+      if (card.textContent.includes("Luke") || card.textContent.includes("Obi-Wan")) {
+        card.style.transition = "all 0.5s ease";
+        card.style.opacity = "0";
+        card.style.transform = "scale(0.6) translateY(30px)";
+      }
     });
-  });
-}
-
-function renderPosters() {
-  const grid = document.getElementById("posterGrid");
-  const posters = [
-    "Twin Suns Broadcast",
-    "Rebel Signal Over Scarif",
-    "The Last Squadron",
-    "Myth of the Kyber Heart",
-    "Empire in Vermilion",
-    "Jakku Wind Chronicle",
-  ];
-  posters.forEach((title) => {
-    const item = document.createElement("article");
-    item.className = "poster";
-    item.innerHTML = `<div class="mock"></div><h3>${title}</h3>`;
-    grid.appendChild(item);
-  });
-}
-
-function createTransmission() {
-  const seeds = [
-    "Yavin rain carries static and prophecy in equal measure.",
-    "The archive reports a red moon over Jedha and an uneasy silence.",
-    "A pilot swears hyperspace smells like old paper and ion fire.",
-    "In the bunker, hope sounds like reels turning in the dark.",
-    "A cracked helmet reflects twin suns and a forgotten oath.",
-  ];
-  const choice = seeds[Math.floor(Math.random() * seeds.length)];
-  const data = getData();
-  data.transmissions.unshift({ id: uid(), text: choice, created: new Date().toISOString() });
-  data.transmissions = data.transmissions.slice(0, 10);
-  setData(data);
-  renderTransmissions();
-}
-
-function renderTransmissions() {
-  const data = getData();
-  const wrap = document.getElementById("transmissionList");
-  wrap.innerHTML = "";
-  data.transmissions.forEach((t) => {
-    const card = document.createElement("article");
-    card.className = "page";
-    card.innerHTML = `<p>${t.text}</p><small>${new Date(t.created).toLocaleTimeString()}</small>`;
-    wrap.appendChild(card);
-  });
-}
-
-function trackingGlitch() {
-  const desk = document.getElementById("desk");
-  desk.style.transform = `skewX(${(Math.random() - 0.5) * 2}deg)`;
-  setTimeout(() => { desk.style.transform = ""; }, 50);
-}
-
-function setupInteractionIdle() {
-  const reels = document.getElementById("reels");
-  const ping = () => {
-    idleSince = Date.now();
-    reels.classList.remove("idle");
+    toast("Order 66 Protocol executed.");
   };
-  ["mousemove", "keydown", "click", "scroll"].forEach((ev) => addEventListener(ev, ping));
-  setInterval(() => {
-    if (Date.now() - idleSince > 5000) reels.classList.add("idle");
-  }, 1000);
 }
 
-function setupEasterEggs() {
-  let rapid = [];
+function renderTapes() {
+  const shelf = document.getElementById("tapeShelf");
+  ["I", "II", "III", "IV", "V", "VI"].forEach((ep) => {
+    const card = document.createElement("article");
+    card.className = "poster";
+    card.innerHTML = `<div class="mock"></div><h3>Episode ${ep}</h3>`;
+    card.onclick = () => openModal(`Episode ${ep}`, "Crawl summary, key conflicts, and legacy impact.");
+    shelf.appendChild(card);
+  });
+}
+
+function openModal(title, body) {
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalBody").textContent = body;
+  document.getElementById("modal").classList.remove("hidden");
+  tone(180, 0.1, 0.03);
+}
+
+function setupGlobal() {
+  document.getElementById("closeModal").onclick = () => document.getElementById("modal").classList.add("hidden");
+  document.getElementById("closeOverlay").onclick = () => document.getElementById("personnelOverlay").classList.add("hidden");
+  document.querySelectorAll(".nav-btn").forEach((b) => { b.onclick = () => setView(b.dataset.view); b.onmouseenter = () => tone(640, 0.03, 0.01); });
+  document.getElementById("loadPersonnel").onclick = renderPersonnel;
+  document.getElementById("personnelQuery").addEventListener("input", () => tone(720, 0.02, 0.008));
   addEventListener("keydown", (e) => {
-    if (e.key.toLowerCase() === "p") {
-      document.body.classList.toggle("misprint");
-      toast("MISPRINT MODE TOGGLED");
-    }
+    typed = (typed + e.key).toUpperCase().slice(-10);
+    if (typed.includes("REVAN")) { document.body.classList.toggle("misprint"); toast("Old Republic archive unlocked."); }
   });
   addEventListener("click", () => {
-    const now = Date.now();
-    rapid = [...rapid, now].filter((n) => now - n < 1200);
-    if (rapid.length >= 5) {
-      document.getElementById("burn").classList.add("active");
-      setTimeout(() => document.getElementById("burn").classList.remove("active"), 2200);
-      toast("CRT OVERLOAD");
-      rapid = [];
-    }
+    rapid = [...rapid, Date.now()].filter((x) => Date.now() - x < 1200);
+    if (rapid.length >= 5) { document.getElementById("burn").classList.add("active"); setTimeout(() => document.getElementById("burn").classList.remove("active"), 2000); rapid = []; }
   });
+  ["mousemove", "click", "keydown", "scroll"].forEach((ev) => addEventListener(ev, () => { idleSince = Date.now(); document.getElementById("reels").classList.remove("idle"); }));
+  setInterval(() => { if (Date.now() - idleSince > 5000) document.getElementById("reels").classList.add("idle"); }, 1000);
 }
 
 window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() {
   ytPlayer = new YT.Player("ytPlayer", {
-    height: "0",
-    width: "0",
-    videoId: TRACKS.ambient.id,
+    height: "0", width: "0", videoId: TRACKS.ambient,
     playerVars: { autoplay: 1, controls: 0, rel: 0, playsinline: 1 },
     events: { onReady: (e) => { e.target.setVolume(28); e.target.playVideo(); } },
   });
 };
-
 function playTrack(name) {
-  const t = TRACKS[name] || TRACKS.ambient;
-  if (ytPlayer && ytPlayer.loadVideoById) ytPlayer.loadVideoById(t.id);
+  if (ytPlayer && ytPlayer.loadVideoById) ytPlayer.loadVideoById(TRACKS[name] || TRACKS.ambient);
 }
 
 function init() {
   setupStarfield();
   setupBoot();
-  setupNav();
-  setupSchematics();
-  renderPosters();
-  renderPages();
-  renderTransmissions();
-  setupInteractionIdle();
-  setupEasterEggs();
-  document.getElementById("saveMythos").onclick = saveMythosPage;
-  document.getElementById("genTransmission").onclick = createTransmission;
-  document.querySelectorAll("textarea").forEach((ta) => {
-    ta.addEventListener("input", typeClack);
-  });
-  addEventListener("scroll", trackingGlitch, { passive: true });
+  renderPersonnel();
+  setupBloodlines();
+  setupArmory();
+  renderCensus();
+  renderTapes();
+  setupGlobal();
 }
 
 init();
