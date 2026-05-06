@@ -1,3 +1,88 @@
+const TITLES = [
+  "Mustafar Corridor Clash",
+  "Twin Suns Oath",
+  "Ashes Of The Republic",
+  "Crimson Throne Duel",
+  "Bridge Of Broken Masters",
+  "Blue Hour Reckoning",
+  "Rift At The Core",
+  "Shadows On Bespin",
+  "Temple Echoes",
+  "Final Form",
+];
+
+const MOODS = [
+  "Silhouette combat under ember haze.",
+  "Quiet before impact, steel and breath.",
+  "Fallen order energy in saturated dusk.",
+  "High-contrast duel vignette with smoke.",
+];
+
+function rand(max) { return Math.floor(Math.random() * max); }
+
+function paintBackground() {
+  const canvas = document.getElementById("bgCanvas");
+  const ctx = canvas.getContext("2d");
+  const resize = () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  };
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < 320; i += 1) {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const s = Math.random() * 1.7;
+      ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.45})`;
+      ctx.fillRect(x, y, s, s);
+    }
+    requestAnimationFrame(draw);
+  };
+  resize();
+  draw();
+  addEventListener("resize", resize);
+}
+
+function sceneGradient(i, palette = 0) {
+  const palettes = [
+    ["#250710", "#6d0b2a", "#10192f"],
+    ["#130d1f", "#1f355f", "#641124"],
+    ["#1c0d0d", "#78300d", "#1e2236"],
+  ];
+  const p = palettes[palette % palettes.length];
+  const c1 = p[i % 3];
+  const c2 = p[(i + 1) % 3];
+  const c3 = p[(i + 2) % 3];
+  return `linear-gradient(160deg, ${c1}, ${c2}, ${c3})`;
+}
+
+let paletteIndex = 0;
+function renderScenes() {
+  const grid = document.getElementById("sceneGrid");
+  const tpl = document.getElementById("sceneCard");
+  grid.innerHTML = "";
+  for (let i = 0; i < 14; i += 1) {
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    node.querySelector("h3").textContent = TITLES[i % TITLES.length];
+    node.querySelector("p").textContent = MOODS[rand(MOODS.length)];
+    const art = node.querySelector(".card-art");
+    const flare = `radial-gradient(circle at ${20 + rand(60)}% ${20 + rand(60)}%, rgba(255,70,40,0.45), transparent 40%)`;
+    art.style.backgroundImage = `${flare}, ${sceneGradient(i, paletteIndex)}`;
+    grid.appendChild(node);
+  }
+}
+
+function bindUI() {
+  document.getElementById("regenScenes").onclick = renderScenes;
+  document.getElementById("shufflePalette").onclick = () => {
+    paletteIndex += 1;
+    renderScenes();
+  };
+}
+
+paintBackground();
+bindUI();
+renderScenes();
 const TRACKS = { ambient: "iotqjyuoi-Y", dark: "vsMWVW4xtwI" };
 let ytPlayer;
 let currentView = "personnel";

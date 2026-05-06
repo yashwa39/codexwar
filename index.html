@@ -1,141 +1,50 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🌌 The Whills Terminal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Courier+Prime:wght@400;700&family=Noto+Sans+JP:wght@700;900&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <svg class="defs" width="0" height="0" aria-hidden="true">
-      <filter id="stipple">
-        <feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" seed="7" />
-        <feColorMatrix
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 14 -7"
-        />
-        <feBlend mode="multiply" in2="SourceGraphic" />
-      </filter>
-    </svg>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Duel Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="veil"></div>
 
-    <div id="boot" class="boot">
-      <p id="bootLine"></p>
-      <canvas id="deathStarBoot" width="420" height="220"></canvas>
-      <button id="skipBoot" class="skip">[ SKIP BOOT ]</button>
-      <div id="flash" class="flash"></div>
-    </div>
+  <header class="header">
+    <h1>DUEL ATLAS</h1>
+    <p>Mythic lightsaber moments, reimagined.</p>
+  </header>
 
-    <canvas id="starCanvas"></canvas>
-    <div class="nebula"></div>
-    <div class="grain"></div>
-    <div class="scanlines"></div>
-    <div class="burn" id="burn"></div>
-
-    <header class="topbar">
-      <h1>THE WHILLS TERMINAL</h1>
-      <div class="reels" id="reels">
-        <span class="reel"></span>
-        <span class="reel"></span>
+  <main class="layout">
+    <section class="hero">
+      <div class="hero-overlay">
+        <h2>Elegy Of Light And Shadow</h2>
+        <p>Dark cinematic panels inspired by the duel art style you shared.</p>
       </div>
-    </header>
+    </section>
 
-    <main class="desk" id="desk">
-      <aside class="index radar-grid">
-        <button class="nav-btn active" data-view="personnel">[01] PERSONNEL FILES</button>
-        <button class="nav-btn" data-view="bloodlines">[02] THE BLOODLINES</button>
-        <button class="nav-btn" data-view="armory">[03] THE ARMORY</button>
-        <button class="nav-btn" data-view="census">[04] GALACTIC CENSUS</button>
-        <button class="nav-btn" data-view="tapes">[05] SACRED TAPES</button>
-      </aside>
-
-      <section class="viewport mythos active" id="personnel">
-        <h2>PERSONNEL FILES</h2>
-        <div class="entry-form">
-          <input id="personnelQuery" placeholder="Search: Luke, Vader, Ahsoka..." />
-          <button id="loadPersonnel">SCAN DATABASE</button>
-        </div>
-        <div id="personnelGrid" class="pages datacards"></div>
-      </section>
-
-      <section class="viewport schematics" id="bloodlines">
-        <h2>THE BLOODLINES</h2>
-        <div class="schematic-wrap">
-          <svg id="bloodlineGraph" viewBox="0 0 900 430"></svg>
-          <div id="partInfo" class="part-info">Drag nodes. Click links for lineage echoes.</div>
-        </div>
-      </section>
-
-      <section class="viewport propaganda" id="armory">
-        <h2>THE ARMORY</h2>
-        <div class="armory-wrap">
-          <div id="hiltLayers" class="hilt-layers">
-            <div class="hilt-layer">EMITTER</div>
-            <div class="hilt-layer">FOCUS LENS</div>
-            <div class="hilt-layer">CRYSTAL CHAMBER</div>
-            <div class="hilt-layer">POWER CELL</div>
-            <div class="hilt-layer">POMMEL</div>
-          </div>
-          <div class="crystal-row">
-            <button class="crystal green" data-crystal="green">GREEN</button>
-            <button class="crystal purple" data-crystal="purple">PURPLE</button>
-            <button class="crystal red" data-crystal="red">RED</button>
-          </div>
-          <p id="crystalLore" class="part-info">Select a crystal to tune the terminal frequency.</p>
-        </div>
-      </section>
-
-      <section class="viewport transmissions" id="census">
-        <h2>GALACTIC CENSUS</h2>
-        <div class="kanji">反乱 同盟 帝国</div>
-        <div id="factionCarousel" class="poster-grid"></div>
-        <button id="order66Btn" class="order66">ORDER 66</button>
-      </section>
-
-      <section class="viewport mythos" id="tapes">
-        <h2>THE SACRED TAPES</h2>
-        <div id="tapeShelf" class="poster-grid"></div>
-      </section>
-    </main>
-
-    <div id="modal" class="modal hidden">
-      <div class="modal-card">
-        <button id="closeModal">X</button>
-        <h3 id="modalTitle"></h3>
-        <p id="modalBody"></p>
+    <section>
+      <div class="toolbar">
+        <button id="regenScenes">Generate More Scenes</button>
+        <button id="shufflePalette">Shift Mood</button>
       </div>
-    </div>
+      <div id="sceneGrid" class="scene-grid"></div>
+    </section>
+  </main>
 
-    <article id="personnelOverlay" class="personnel-overlay hidden">
-      <button id="closeOverlay">X</button>
-      <div class="overlay-grid">
-        <div id="overlayPortrait" class="overlay-portrait"></div>
-        <div>
-          <h3 id="overlayName"></h3>
-          <p id="overlayLore"></p>
-          <small id="overlayMeta"></small>
-        </div>
+  <template id="sceneCard">
+    <article class="card">
+      <div class="card-art"></div>
+      <div class="card-meta">
+        <h3></h3>
+        <p></p>
       </div>
     </article>
+  </template>
 
-    <div class="corner tl"></div>
-    <div class="corner tr"></div>
-    <div class="corner bl"></div>
-    <div class="corner br"></div>
-
-    <div id="toast" class="toast"></div>
-    <div id="ytPlayer"></div>
-    <script src="./script.js"></script>
-  </body>
+  <script src="./script.js"></script>
+</body>
 </html>
