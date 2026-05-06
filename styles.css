@@ -26,31 +26,17 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.btn-primary {
-  background: linear-gradient(90deg, rgba(255,54,95,0.82), rgba(83,181,255,0.85));
-  color: white;
-}
-.btn-secondary {
-  border: 1px solid rgba(161, 161, 170, 0.5);
-  background: rgba(39, 39, 42, 0.6);
-}
+.btn-primary { background: linear-gradient(90deg, rgba(255,54,95,0.82), rgba(83,181,255,0.85)); color: white; }
+.btn-secondary { border: 1px solid rgba(161, 161, 170, 0.5); background: rgba(39, 39, 42, 0.6); }
 .art-panel {
   background:
     radial-gradient(circle at 25% 25%, rgba(255, 65, 88, 0.45), transparent 35%),
     radial-gradient(circle at 75% 80%, rgba(83, 181, 255, 0.46), transparent 38%),
     linear-gradient(160deg, #130913, #211b35, #2c0d18);
-  background-size: 100% 100%;
   animation: huePulse 6s ease-in-out infinite alternate;
 }
-.entry-art {
-  background:
-    linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.48)),
-    linear-gradient(145deg, rgba(255,54,95,0.6), rgba(83,181,255,0.65));
-}
-.tilt-card {
-  transform-style: preserve-3d;
-  transition: transform 0.15s ease;
-}
+.entry-art { background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.48)), linear-gradient(145deg, rgba(255,54,95,0.6), rgba(83,181,255,0.65)); }
+.tilt-card { transform-style: preserve-3d; transition: transform 0.15s ease; }
 .fleet-art svg { width: 92%; height: 92%; opacity: 0.95; }
 
 @keyframes huePulse {
