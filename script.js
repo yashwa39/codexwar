@@ -22,6 +22,36 @@ function setData(next) {
   localStorage.setItem(STORE, JSON.stringify(next));
 }
 
+function setupStarfield() {
+  const canvas = document.getElementById("starCanvas");
+  const ctx = canvas.getContext("2d");
+  let stars = [];
+  const resize = () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    stars = Array.from({ length: 900 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      z: Math.random() * 2 + 0.5,
+      a: Math.random() * 0.9 + 0.1,
+      s: Math.random() * 0.25 + 0.05,
+    }));
+  };
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach((st) => {
+      st.x += st.s * st.z;
+      if (st.x > canvas.width + 2) st.x = -2;
+      ctx.fillStyle = `rgba(232,232,255,${st.a})`;
+      ctx.fillRect(st.x, st.y, st.z, st.z);
+    });
+    requestAnimationFrame(draw);
+  };
+  resize();
+  draw();
+  addEventListener("resize", resize);
+}
+
 function toast(msg) {
   const el = document.getElementById("toast");
   el.textContent = msg;
@@ -277,6 +307,7 @@ function playTrack(name) {
 }
 
 function init() {
+  setupStarfield();
   setupBoot();
   setupNav();
   setupSchematics();
