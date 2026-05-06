@@ -411,25 +411,32 @@ function setupCanvasStars() {
   function resize() {
     canvas.width = innerWidth;
     canvas.height = innerHeight;
-    stars = Array.from({ length: 820 }, () => ({
+    stars = Array.from({ length: 850 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      z: Math.random() * 3 + 1,
+      z: Math.random() * 4 + 0.5, // Parallax depth
       a: Math.random(),
-      tw: Math.random() * 0.02 + 0.004,
+      tw: Math.random() * 0.02 + 0.005,
+      color: Math.random() > 0.9 ? "#4fc3f7" : "#e8e8ff",
     }));
   }
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const speed = document.getElementById("dreamPanel").classList.contains("active") ? 0.35 : 0.12;
+    const speed = document.getElementById("dreamPanel").classList.contains("active") ? 0.6 : 0.15;
     stars.forEach((s) => {
       s.a += s.tw;
       if (s.a > 1 || s.a < 0.2) s.tw *= -1;
+      
+      // Moving at different speeds based on 'z' depth
       s.x += speed * s.z;
       if (s.x > canvas.width) s.x = 0;
-      ctx.fillStyle = `rgba(232,232,255,${s.a})`;
-      ctx.fillRect(s.x, s.y, s.z, s.z);
+      
+      const size = s.z * 0.6;
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = s.a;
+      ctx.fillRect(s.x, s.y, size, size);
     });
+    ctx.globalAlpha = 1;
     requestAnimationFrame(draw);
   }
   resize();

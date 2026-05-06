@@ -29,40 +29,98 @@ body {
   position: fixed; top: 20px; left: 20px; right: 20px; z-index: 20;
   display: flex; justify-content: space-between; align-items: center;
 }
-.brand { font-family: Orbitron, sans-serif; letter-spacing: 2px; color: var(--jedi-gold); }
-.force-hud {
-  border: 1px solid var(--kyber-green); padding: 8px 12px; border-radius: 10px;
-  background: rgba(0,0,0,0.45); color: var(--kyber-green); min-width: 270px;
+.brand {
+  font-family: Orbitron, sans-serif;
+  letter-spacing: 4px;
+  color: var(--jedi-gold);
+  text-transform: uppercase;
+  text-shadow: 
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 10px rgba(201,168,76,0.5);
 }
 
 .section-panel {
   position: fixed; top: 80px; right: 20px; bottom: 95px; left: 20px; z-index: 10;
-  transform: translateX(110%); transition: transform 0.5s ease;
-  background: rgba(26,26,46,0.42); border: 1px solid rgba(79,195,247,0.45);
-  border-radius: 16px; backdrop-filter: blur(12px) hue-rotate(5deg);
-  padding: 16px; overflow: auto;
+  transform: translateX(110%); transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  background: rgba(3, 2, 10, 0.7);
+  border: 1px solid rgba(79,195,247,0.3);
+  border-radius: 4px;
+  backdrop-filter: blur(15px);
+  padding: 24px;
+  overflow: auto;
 }
-.section-panel.active { transform: translateX(0); }
-.section-panel h2 { margin-top: 0; font-family: Orbitron, sans-serif; }
-.dream { --accent: #39ff14; }
-.goals { --accent: #39ff14; }
-.editor-wrap { display: grid; gap: 10px; margin-bottom: 16px; }
-input, textarea, select, button {
-  font: inherit; color: var(--hyperspace-white); background: rgba(0,0,0,0.45);
-  border: 1px solid #3a4154; border-radius: 10px; padding: 10px;
-}
-textarea { resize: vertical; font-family: "Crimson Pro", serif; font-style: italic; }
-textarea:focus, input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px var(--kyber-blue); }
-.editor-wrap.dark textarea { caret-color: var(--sith-crimson); box-shadow: inset 0 0 0 1px rgba(139,0,0,0.35); }
-.editor-wrap.jedi textarea { caret-color: var(--kyber-blue); }
-.moods { display: flex; flex-wrap: wrap; gap: 8px; }
-.moods button { border-radius: 999px; border: 1px solid var(--jedi-gold); }
-.moods button.active { background: rgba(201,168,76,0.25); box-shadow: 0 0 18px rgba(201,168,76,0.5); }
 
-.primary-btn { cursor: pointer; transition: transform 0.08s ease; }
-.primary-btn:active, .ghost-btn:active, .nav-core:active { transform: scale(0.96); }
-.primary-btn.dark:hover { box-shadow: 0 0 15px rgba(139,0,0,0.6); }
-.primary-btn.jedi:hover { box-shadow: 0 0 15px rgba(79,195,247,0.6); }
+/* Tactical HUD Brackets */
+.section-panel::before, .section-panel::after,
+.section-panel > h2::before, .section-panel > h2::after {
+  content: ""; position: absolute; width: 20px; height: 20px; border-color: var(--kyber-blue); border-style: solid; pointer-events: none;
+}
+.section-panel::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.section-panel::after { top: 0; right: 0; border-width: 2px 2px 0 0; }
+.section-panel > h2::before { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+.section-panel > h2::after { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+.section-panel.active { transform: translateX(0); }
+
+/* Lightsaber Ignition Border */
+.section-panel.active::before {
+  animation: ignite 0.4s ease-out forwards;
+}
+
+@keyframes ignite {
+  from { height: 0; opacity: 0; }
+  to { height: 20px; opacity: 1; }
+}
+
+/* Dark Archives Sith Glitch */
+#darkPanel.active {
+  animation: sith-flicker 8s infinite;
+  border-color: rgba(139,0,0,0.5);
+}
+#darkPanel::before, #darkPanel::after { border-color: var(--sith-crimson); }
+
+@keyframes sith-flicker {
+  0%, 95%, 100% { opacity: 1; filter: none; }
+  96% { opacity: 0.9; filter: contrast(150%) hue-rotate(10deg); }
+  97% { opacity: 1; filter: none; }
+  98% { opacity: 0.8; filter: invert(0.1); }
+  99% { opacity: 1; }
+}
+
+/* Holographic Dream Visions */
+.section-panel.dream {
+  background: rgba(0, 20, 40, 0.6);
+  border-color: var(--kyber-blue);
+  box-shadow: inset 0 0 30px rgba(79,195,247,0.2);
+}
+.section-panel.dream::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(79,195,247,0.05) 3px, transparent 4px);
+  pointer-events: none; animation: scanline 10s linear infinite;
+}
+
+@keyframes scanline {
+  from { background-position: 0 0; }
+  to { background-position: 0 100%; }
+}
+
+.primary-btn { 
+  cursor: pointer; 
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.primary-btn:hover {
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 0 15px var(--accent-glow, var(--kyber-blue));
+}
+.primary-btn.dark { --accent-glow: var(--sith-crimson); border-color: var(--sith-crimson); }
+.primary-btn.jedi { --accent-glow: var(--kyber-blue); border-color: var(--kyber-blue); }
+.primary-btn.dream { --accent-glow: var(--kyber-green); border-color: var(--kyber-green); }
 .ghost-btn { cursor: pointer; border: 1px solid var(--jedi-gold); color: var(--jedi-gold); background: rgba(0,0,0,0.3); }
 
 .entries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 12px; }
