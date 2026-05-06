@@ -1,335 +1,113 @@
 const TITLES = [
   "Mustafar Corridor Clash",
-  "Twin Suns Oath",
-  "Ashes Of The Republic",
-  "Crimson Throne Duel",
-  "Bridge Of Broken Masters",
-  "Blue Hour Reckoning",
-  "Rift At The Core",
-  "Shadows On Bespin",
-  "Temple Echoes",
-  "Final Form",
+  "Twilight On Bespin",
+  "Temple Of Embers",
+  "Last Master Standing",
+  "Shadows In The Throne Room",
+  "Blue Steel Vow",
+  "Ashfall Duel",
+  "Revenge In Silence",
+  "Across The Ruins",
+  "Final Crossing",
 ];
 
 const MOODS = [
-  "Silhouette combat under ember haze.",
-  "Quiet before impact, steel and breath.",
-  "Fallen order energy in saturated dusk.",
-  "High-contrast duel vignette with smoke.",
+  "Silhouette duel beneath burning haze.",
+  "Breath, steel, and fate in one frame.",
+  "A mythic clash of red and blue.",
+  "Quiet tension before violent motion.",
 ];
 
-function rand(max) { return Math.floor(Math.random() * max); }
+let paletteIndex = 0;
 
-function paintBackground() {
+function rand(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function drawBackground() {
   const canvas = document.getElementById("bgCanvas");
   const ctx = canvas.getContext("2d");
+  let stars = [];
+
   const resize = () => {
     canvas.width = innerWidth;
     canvas.height = innerHeight;
+    stars = Array.from({ length: 260 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      s: Math.random() * 2 + 0.4,
+      a: Math.random() * 0.7 + 0.2,
+    }));
   };
-  const draw = () => {
+
+  const tick = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < 320; i += 1) {
-      const x = Math.random() * canvas.width;
-      const y = Math.random() * canvas.height;
-      const s = Math.random() * 1.7;
-      ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.45})`;
-      ctx.fillRect(x, y, s, s);
-    }
-    requestAnimationFrame(draw);
+    stars.forEach((st) => {
+      st.x += st.s * 0.06;
+      if (st.x > canvas.width + 3) st.x = -3;
+      ctx.fillStyle = `rgba(255,255,255,${st.a})`;
+      ctx.fillRect(st.x, st.y, st.s, st.s);
+    });
+    requestAnimationFrame(tick);
   };
+
   resize();
-  draw();
+  tick();
   addEventListener("resize", resize);
 }
 
-function sceneGradient(i, palette = 0) {
-  const palettes = [
-    ["#250710", "#6d0b2a", "#10192f"],
-    ["#130d1f", "#1f355f", "#641124"],
-    ["#1c0d0d", "#78300d", "#1e2236"],
+function palette(i) {
+  const sets = [
+    ["#190910", "#5f0f2b", "#17284f"],
+    ["#0f101e", "#213f75", "#702015"],
+    ["#160a0a", "#642211", "#1a2240"],
   ];
-  const p = palettes[palette % palettes.length];
-  const c1 = p[i % 3];
-  const c2 = p[(i + 1) % 3];
-  const c3 = p[(i + 2) % 3];
-  return `linear-gradient(160deg, ${c1}, ${c2}, ${c3})`;
+  const p = sets[i % sets.length];
+  return [p[0], p[1], p[2]];
 }
 
-let paletteIndex = 0;
+function makeSilhouettePattern(seed = 0) {
+  const x = 15 + (seed * 11) % 70;
+  const y = 18 + (seed * 7) % 50;
+  return `radial-gradient(circle at ${x}% ${y}%, rgba(255,120,70,0.46), transparent 35%),
+          linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.45)),
+          linear-gradient(140deg, rgba(255,20,70,0.45), rgba(18,34,74,0.65))`;
+}
+
 function renderScenes() {
   const grid = document.getElementById("sceneGrid");
   const tpl = document.getElementById("sceneCard");
+  const [c1, c2, c3] = palette(paletteIndex);
   grid.innerHTML = "";
-  for (let i = 0; i < 14; i += 1) {
+
+  for (let i = 0; i < 16; i += 1) {
     const node = tpl.content.firstElementChild.cloneNode(true);
     node.querySelector("h3").textContent = TITLES[i % TITLES.length];
     node.querySelector("p").textContent = MOODS[rand(MOODS.length)];
     const art = node.querySelector(".card-art");
-    const flare = `radial-gradient(circle at ${20 + rand(60)}% ${20 + rand(60)}%, rgba(255,70,40,0.45), transparent 40%)`;
-    art.style.backgroundImage = `${flare}, ${sceneGradient(i, paletteIndex)}`;
+    art.style.backgroundImage = `${makeSilhouettePattern(i)}, linear-gradient(165deg, ${c1}, ${c2}, ${c3})`;
+    art.style.transform = `scale(${1 + (i % 4) * 0.01})`;
+    node.onmousemove = (e) => {
+      const r = node.getBoundingClientRect();
+      const dx = (e.clientX - r.left) / r.width - 0.5;
+      const dy = (e.clientY - r.top) / r.height - 0.5;
+      node.style.transform = `rotateX(${dy * -6}deg) rotateY(${dx * 8}deg)`;
+    };
+    node.onmouseleave = () => {
+      node.style.transform = "";
+    };
     grid.appendChild(node);
   }
 }
 
-function bindUI() {
-  document.getElementById("regenScenes").onclick = renderScenes;
+function wireActions() {
+  document.getElementById("regenScenes").onclick = () => renderScenes();
   document.getElementById("shufflePalette").onclick = () => {
     paletteIndex += 1;
     renderScenes();
   };
 }
 
-paintBackground();
-bindUI();
+drawBackground();
+wireActions();
 renderScenes();
-const TRACKS = { ambient: "iotqjyuoi-Y", dark: "vsMWVW4xtwI" };
-let ytPlayer;
-let currentView = "personnel";
-let viewStart = Date.now();
-let idleSince = Date.now();
-let typed = "";
-let rapid = [];
-
-const characters = [
-  { name: "Luke Skywalker", side: "jedi", home: "Tatooine", faction: "Rebel Alliance" },
-  { name: "Darth Vader", side: "sith", home: "Tatooine", faction: "Galactic Empire" },
-  { name: "Leia Organa", side: "neutral", home: "Alderaan", faction: "Rebel Alliance" },
-  { name: "Obi-Wan Kenobi", side: "jedi", home: "Stewjon", faction: "Jedi Order" },
-  { name: "Palpatine", side: "sith", home: "Naboo", faction: "Sith/Empire" },
-];
-
-function tone(freq = 440, duration = 0.06, gainVal = 0.018) {
-  const ctx = window.__aCtx || (window.__aCtx = new AudioContext());
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.frequency.value = freq;
-  gain.gain.value = gainVal;
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  osc.stop(ctx.currentTime + duration);
-}
-
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2400);
-}
-
-function setupStarfield() {
-  const canvas = document.getElementById("starCanvas");
-  const ctx = canvas.getContext("2d");
-  let stars = [];
-  const resize = () => {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    stars = Array.from({ length: 900 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      z: Math.random() * 2 + 0.5,
-      s: Math.random() * 0.25 + 0.05,
-    }));
-  };
-  const draw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stars.forEach((st) => {
-      st.x += st.s * st.z;
-      if (st.x > canvas.width + 2) st.x = -2;
-      ctx.fillStyle = `rgba(232,232,255,${0.15 + st.z / 3})`;
-      ctx.fillRect(st.x, st.y, st.z, st.z);
-    });
-    requestAnimationFrame(draw);
-  };
-  resize();
-  draw();
-  addEventListener("resize", resize);
-}
-
-function setupBoot() {
-  const boot = document.getElementById("boot");
-  const line = document.getElementById("bootLine");
-  const text = "> DECRYPTING WHILLS DATACORE...";
-  let i = 0;
-  const timer = setInterval(() => {
-    line.textContent += text[i] || "";
-    tone(760, 0.02, 0.01);
-    i += 1;
-    if (i >= text.length) {
-      clearInterval(timer);
-      animateBootSphere();
-      setTimeout(() => {
-        document.getElementById("flash").classList.add("on");
-        setTimeout(() => { boot.style.display = "none"; }, 300);
-      }, 1600);
-    }
-  }, 35);
-  document.getElementById("skipBoot").onclick = () => { boot.style.display = "none"; };
-}
-
-function animateBootSphere() {
-  const c = document.getElementById("deathStarBoot");
-  const ctx = c.getContext("2d");
-  let t = 0;
-  const draw = () => {
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.strokeStyle = "#1ceb58";
-    for (let i = 0; i < 24; i += 1) {
-      const a = (i / 24) * Math.PI * 2 + t;
-      const r = 65 + Math.sin(t * 2 + i) * 5;
-      const x = c.width / 2 + Math.cos(a) * r;
-      const y = c.height / 2 + Math.sin(a) * r * 0.6;
-      ctx.beginPath();
-      ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    t += 0.03;
-    if (document.getElementById("boot").style.display !== "none") requestAnimationFrame(draw);
-  };
-  draw();
-}
-
-function setView(id) {
-  document.querySelectorAll(".viewport").forEach((v) => v.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  document.querySelector(`.nav-btn[data-view="${id}"]`).classList.add("active");
-  currentView = id;
-  viewStart = Date.now();
-  if (id === "census") setTimeout(() => { if (currentView === "census") playTrack("dark"); }, 30000);
-  else playTrack("ambient");
-}
-
-function renderPersonnel() {
-  const grid = document.getElementById("personnelGrid");
-  grid.innerHTML = "";
-  characters.forEach((c) => {
-    const card = document.createElement("article");
-    card.className = "datacard";
-    card.innerHTML = `<div class="portrait"></div><h3>${c.name}</h3><small>${c.faction}</small>`;
-    card.onclick = () => openPersonnel(c);
-    grid.appendChild(card);
-  });
-}
-
-function openPersonnel(c) {
-  document.getElementById("overlayName").textContent = c.name;
-  document.getElementById("overlayMeta").textContent = `${c.home} • ${c.faction}`;
-  document.getElementById("overlayLore").textContent =
-    `${c.name} remains a volatile force in galactic memory. Rebel analysts describe this figure as a fracture point between myth and propaganda, where private choices reshape public history.`;
-  document.getElementById("personnelOverlay").classList.remove("hidden");
-}
-
-function setupBloodlines() {
-  const svg = d3.select("#bloodlineGraph");
-  const nodes = [
-    { id: "Anakin", side: "sith" }, { id: "Padme", side: "neutral" }, { id: "Luke", side: "jedi" },
-    { id: "Leia", side: "jedi" }, { id: "Palpatine", side: "sith" },
-  ];
-  const links = [{ source: "Anakin", target: "Luke" }, { source: "Anakin", target: "Leia" }, { source: "Padme", target: "Luke" }, { source: "Padme", target: "Leia" }, { source: "Palpatine", target: "Anakin" }];
-  const sim = d3.forceSimulation(nodes).force("link", d3.forceLink(links).id((d) => d.id).distance(130)).force("charge", d3.forceManyBody().strength(-250)).force("center", d3.forceCenter(450, 210));
-  const link = svg.selectAll(".link").data(links).join("line").attr("class", "link");
-  link.on("click", () => { tone(120, 0.2, 0.03); tone(90, 0.2, 0.02); toast("I am your father."); });
-  const node = svg.selectAll(".node").data(nodes).join("g").attr("class", "node").call(d3.drag().on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }).on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; }).on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
-  node.append("circle").attr("r", 18).attr("fill", (d) => (d.side === "sith" ? "#ff2a2a" : d.side === "jedi" ? "#00ffff" : "#eaddcd"));
-  node.append("text").attr("dy", 4).attr("text-anchor", "middle").attr("fill", "#001300").text((d) => d.id);
-  sim.on("tick", () => {
-    link.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y).attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
-    node.attr("transform", (d) => `translate(${d.x},${d.y})`);
-  });
-}
-
-function setupArmory() {
-  const layers = [...document.querySelectorAll(".hilt-layer")];
-  gsap.fromTo(layers, { x: -120, opacity: 0 }, { x: 0, opacity: 1, stagger: 0.1, duration: 0.6 });
-  document.querySelectorAll(".crystal").forEach((c) => {
-    c.onclick = () => {
-      const mode = c.dataset.crystal;
-      const lore = { green: "Consular. Harmony. Focus.", purple: "Mace Windu. Balance at the edge.", red: "Bled crystal. Pain. Subjugation." };
-      document.getElementById("crystalLore").textContent = lore[mode];
-      document.body.classList.toggle("red-alert", mode === "red");
-      tone(mode === "red" ? 90 : 380, 0.12, 0.03);
-    };
-  });
-}
-
-function renderCensus() {
-  const wrap = document.getElementById("factionCarousel");
-  ["Galactic Republic", "Sith Empire", "Mandalorians", "Wookiees", "Twi'leks", "Rebel Alliance", "Galactic Empire"].forEach((f) => {
-    const card = document.createElement("article");
-    card.className = "poster";
-    card.innerHTML = `<div class="mock"></div><h3>${f}</h3><p>Socio-political archive briefing.</p>`;
-    wrap.appendChild(card);
-  });
-  document.getElementById("order66Btn").onclick = () => {
-    document.querySelectorAll(".datacard").forEach((card) => {
-      if (card.textContent.includes("Luke") || card.textContent.includes("Obi-Wan")) {
-        card.style.transition = "all 0.5s ease";
-        card.style.opacity = "0";
-        card.style.transform = "scale(0.6) translateY(30px)";
-      }
-    });
-    toast("Order 66 Protocol executed.");
-  };
-}
-
-function renderTapes() {
-  const shelf = document.getElementById("tapeShelf");
-  ["I", "II", "III", "IV", "V", "VI"].forEach((ep) => {
-    const card = document.createElement("article");
-    card.className = "poster";
-    card.innerHTML = `<div class="mock"></div><h3>Episode ${ep}</h3>`;
-    card.onclick = () => openModal(`Episode ${ep}`, "Crawl summary, key conflicts, and legacy impact.");
-    shelf.appendChild(card);
-  });
-}
-
-function openModal(title, body) {
-  document.getElementById("modalTitle").textContent = title;
-  document.getElementById("modalBody").textContent = body;
-  document.getElementById("modal").classList.remove("hidden");
-  tone(180, 0.1, 0.03);
-}
-
-function setupGlobal() {
-  document.getElementById("closeModal").onclick = () => document.getElementById("modal").classList.add("hidden");
-  document.getElementById("closeOverlay").onclick = () => document.getElementById("personnelOverlay").classList.add("hidden");
-  document.querySelectorAll(".nav-btn").forEach((b) => { b.onclick = () => setView(b.dataset.view); b.onmouseenter = () => tone(640, 0.03, 0.01); });
-  document.getElementById("loadPersonnel").onclick = renderPersonnel;
-  document.getElementById("personnelQuery").addEventListener("input", () => tone(720, 0.02, 0.008));
-  addEventListener("keydown", (e) => {
-    typed = (typed + e.key).toUpperCase().slice(-10);
-    if (typed.includes("REVAN")) { document.body.classList.toggle("misprint"); toast("Old Republic archive unlocked."); }
-  });
-  addEventListener("click", () => {
-    rapid = [...rapid, Date.now()].filter((x) => Date.now() - x < 1200);
-    if (rapid.length >= 5) { document.getElementById("burn").classList.add("active"); setTimeout(() => document.getElementById("burn").classList.remove("active"), 2000); rapid = []; }
-  });
-  ["mousemove", "click", "keydown", "scroll"].forEach((ev) => addEventListener(ev, () => { idleSince = Date.now(); document.getElementById("reels").classList.remove("idle"); }));
-  setInterval(() => { if (Date.now() - idleSince > 5000) document.getElementById("reels").classList.add("idle"); }, 1000);
-}
-
-window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() {
-  ytPlayer = new YT.Player("ytPlayer", {
-    height: "0", width: "0", videoId: TRACKS.ambient,
-    playerVars: { autoplay: 1, controls: 0, rel: 0, playsinline: 1 },
-    events: { onReady: (e) => { e.target.setVolume(28); e.target.playVideo(); } },
-  });
-};
-function playTrack(name) {
-  if (ytPlayer && ytPlayer.loadVideoById) ytPlayer.loadVideoById(TRACKS[name] || TRACKS.ambient);
-}
-
-function init() {
-  setupStarfield();
-  setupBoot();
-  renderPersonnel();
-  setupBloodlines();
-  setupArmory();
-  renderCensus();
-  renderTapes();
-  setupGlobal();
-}
-
-init();
