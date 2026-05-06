@@ -1,109 +1,59 @@
-:root {
-  --bg: #0c0a12;
-  --ink: #f0e7d9;
-  --red: #b3072f;
-  --blue: #19305d;
-}
-* { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; }
-body {
-  font-family: Inter, sans-serif;
-  background: radial-gradient(circle at top, #221019 0%, #0c0a12 55%);
-  color: var(--ink);
-}
-#bgCanvas, .veil { position: fixed; inset: 0; pointer-events: none; }
-#bgCanvas { z-index: 0; }
-.veil {
-  z-index: 1;
-  background:
-    radial-gradient(circle at 70% 20%, rgba(179, 7, 47, 0.34), transparent 40%),
-    radial-gradient(circle at 20% 85%, rgba(25, 48, 93, 0.45), transparent 42%);
-}
-.header {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 40px 20px 16px;
-}
-.header h1 {
-  font-family: Cinzel, serif;
-  letter-spacing: 4px;
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.2rem);
-}
-.header p { margin: 8px 0 0; opacity: 0.8; }
-
-.layout {
-  position: relative;
-  z-index: 2;
-  width: min(1160px, 94vw);
-  margin: 0 auto 40px;
-  display: grid;
-  gap: 18px;
-}
-.hero {
-  min-height: 44vh;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(240, 231, 217, 0.25);
-  background:
-    linear-gradient(0deg, rgba(10, 5, 12, 0.65), rgba(10, 5, 12, 0.2)),
-    linear-gradient(145deg, rgba(179, 7, 47, 0.6), rgba(25, 48, 93, 0.68));
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 0 80px rgba(0, 0, 0, 0.36);
-  display: grid;
-  align-items: end;
-}
-.hero-overlay { padding: 26px; }
-.hero h2 {
-  margin: 0 0 8px;
-  font-family: Cinzel, serif;
-  font-size: clamp(1.3rem, 3vw, 2.2rem);
-}
-.hero p { margin: 0; opacity: 0.9; }
-
-.toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
-button {
-  border: 1px solid rgba(240, 231, 217, 0.5);
-  background: rgba(20, 18, 26, 0.75);
-  color: var(--ink);
-  padding: 10px 14px;
+.tab-btn {
+  border: 1px solid rgba(161, 161, 170, 0.5);
+  padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(24, 24, 27, 0.6);
 }
-button:hover { transform: translateY(-1px); }
+.active-tab {
+  border-color: rgba(83, 181, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(83, 181, 255, 0.35), 0 0 16px rgba(83, 181, 255, 0.25);
+}
+.input {
+  width: 100%;
+  border: 1px solid rgba(161, 161, 170, 0.5);
+  background: rgba(9, 9, 11, 0.75);
+  border-radius: 0.85rem;
+  padding: 0.75rem 0.8rem;
+  color: rgb(244, 244, 245);
+}
+.btn-primary, .btn-secondary {
+  border-radius: 999px;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.btn-primary {
+  background: linear-gradient(90deg, rgba(255,54,95,0.82), rgba(83,181,255,0.85));
+  color: white;
+}
+.btn-secondary {
+  border: 1px solid rgba(161, 161, 170, 0.5);
+  background: rgba(39, 39, 42, 0.6);
+}
+.art-panel {
+  background:
+    radial-gradient(circle at 25% 25%, rgba(255, 65, 88, 0.45), transparent 35%),
+    radial-gradient(circle at 75% 80%, rgba(83, 181, 255, 0.46), transparent 38%),
+    linear-gradient(160deg, #130913, #211b35, #2c0d18);
+  background-size: 100% 100%;
+  animation: huePulse 6s ease-in-out infinite alternate;
+}
+.entry-art {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.48)),
+    linear-gradient(145deg, rgba(255,54,95,0.6), rgba(83,181,255,0.65));
+}
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease;
+}
+.fleet-art svg { width: 92%; height: 92%; opacity: 0.95; }
 
-.scene-grid {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 14px;
-}
-.card {
-  overflow: hidden;
-  border-radius: 14px;
-  border: 1px solid rgba(240, 231, 217, 0.18);
-  background: rgba(12, 10, 18, 0.6);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-}
-.card-art {
-  height: 220px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-}
-.card-art::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.45));
-}
-.card-meta { padding: 10px 12px 13px; }
-.card-meta h3 {
-  margin: 0 0 6px;
-  font-family: Cinzel, serif;
-  font-size: 1.03rem;
-}
-.card-meta p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.78;
+@keyframes huePulse {
+  from { filter: hue-rotate(0deg) saturate(108%); }
+  to { filter: hue-rotate(18deg) saturate(125%); }
 }

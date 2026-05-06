@@ -1,50 +1,123 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Duel Atlas</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <canvas id="bgCanvas"></canvas>
-  <div class="veil"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Holocron Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              void: "#070711",
+              kyberBlue: "#53b5ff",
+              kyberRed: "#ff365f",
+              holoGold: "#f5d28f",
+            },
+            fontFamily: {
+              display: ["Cinzel", "serif"],
+              body: ["Inter", "sans-serif"],
+            },
+            boxShadow: {
+              glow: "0 0 25px rgba(83,181,255,.35), inset 0 0 24px rgba(255,54,95,.15)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="bg-void text-zinc-100 font-body min-h-screen overflow-x-hidden">
+    <canvas id="stars" class="fixed inset-0 -z-20"></canvas>
+    <div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_15%_20%,rgba(255,54,95,.22),transparent_42%),radial-gradient(circle_at_80%_80%,rgba(83,181,255,.26),transparent_45%)]"></div>
+    <div class="fixed inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(255,255,255,.04)_1px,transparent_2px)] bg-[size:100%_3px] opacity-20"></div>
 
-  <header class="header">
-    <h1>DUEL ATLAS</h1>
-    <p>Mythic lightsaber moments, reimagined.</p>
-  </header>
+    <header class="max-w-7xl mx-auto px-6 pt-8 pb-4">
+      <p class="text-xs tracking-[0.3em] uppercase text-zinc-400">Force-Sensitive Personal Archive</p>
+      <h1 class="font-display text-4xl md:text-6xl leading-tight mt-2 bg-gradient-to-r from-holoGold via-zinc-100 to-kyberBlue bg-clip-text text-transparent">
+        Holocron Journal
+      </h1>
+      <p class="text-zinc-300 max-w-2xl mt-2">Fun, interactive Star Wars-inspired journal with cinematic references, ships, droids, and lightsaber energy.</p>
+    </header>
 
-  <main class="layout">
-    <section class="hero">
-      <div class="hero-overlay">
-        <h2>Elegy Of Light And Shadow</h2>
-        <p>Dark cinematic panels inspired by the duel art style you shared.</p>
-      </div>
-    </section>
+    <main class="max-w-7xl mx-auto px-6 pb-14 grid lg:grid-cols-[1.2fr_.8fr] gap-6">
+      <section class="rounded-3xl border border-zinc-700/70 bg-zinc-950/45 backdrop-blur-md shadow-glow p-5">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="tab-btn active-tab" data-tab="journal">Journal</button>
+          <button class="tab-btn" data-tab="fleet">Fleet & Legends</button>
+          <button class="tab-btn" data-tab="duel">Duel Timeline</button>
+        </div>
 
-    <section>
-      <div class="toolbar">
-        <button id="regenScenes">Generate More Scenes</button>
-        <button id="shufflePalette">Shift Mood</button>
-      </div>
-      <div id="sceneGrid" class="scene-grid"></div>
-    </section>
-  </main>
+        <div id="journalTab" class="tab-panel space-y-4">
+          <div class="grid md:grid-cols-2 gap-3">
+            <input id="entryTitle" class="input" placeholder="Entry title (e.g. Binary Sunset Thoughts)" />
+            <select id="entryMood" class="input">
+              <option>Hope</option>
+              <option>Conflict</option>
+              <option>Dark Side</option>
+              <option>Adventure</option>
+              <option>Legacy</option>
+            </select>
+          </div>
+          <textarea id="entryText" class="input min-h-[140px]" placeholder="Write your holocron entry..."></textarea>
+          <div class="flex flex-wrap gap-2">
+            <button id="saveEntry" class="btn-primary">Save Fragment</button>
+            <button id="randomPrompt" class="btn-secondary">Force Prompt</button>
+            <button id="sparkVisual" class="btn-secondary">Spark Visual Energy</button>
+          </div>
+          <div id="entryGrid" class="grid sm:grid-cols-2 gap-3"></div>
+        </div>
 
-  <template id="sceneCard">
-    <article class="card">
-      <div class="card-art"></div>
-      <div class="card-meta">
-        <h3></h3>
-        <p></p>
-      </div>
-    </article>
-  </template>
+        <div id="fleetTab" class="tab-panel hidden">
+          <div id="fleetGrid" class="grid md:grid-cols-2 gap-4"></div>
+        </div>
 
-  <script src="./script.js"></script>
-</body>
+        <div id="duelTab" class="tab-panel hidden">
+          <div id="duelTimeline" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <aside class="space-y-6">
+        <section class="rounded-3xl border border-zinc-700/70 bg-zinc-950/45 backdrop-blur-md p-5">
+          <h2 class="font-display text-xl mb-3">Holo Hero Scene</h2>
+          <div id="heroArt" class="h-56 rounded-2xl art-panel"></div>
+          <p class="text-sm text-zinc-300 mt-3">Dynamic poster-style visuals generated with layered gradients and Star Wars motif silhouettes.</p>
+        </section>
+
+        <section class="rounded-3xl border border-zinc-700/70 bg-zinc-950/45 backdrop-blur-md p-5">
+          <h2 class="font-display text-xl mb-3">Quick References</h2>
+          <ul class="text-sm text-zinc-300 space-y-2">
+            <li>⚔️ Lightsabers</li>
+            <li>🛸 Millennium Falcon</li>
+            <li>🌑 Death Star</li>
+            <li>✦ TIE Fighters / X-Wings</li>
+            <li>🤖 R2-D2 / C-3PO</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <template id="entryTemplate">
+      <article class="rounded-2xl border border-zinc-700 bg-zinc-900/70 p-3 tilt-card">
+        <div class="h-28 rounded-xl mb-3 entry-art"></div>
+        <h3 class="font-display text-lg"></h3>
+        <p class="text-xs uppercase tracking-widest text-zinc-400 mood"></p>
+        <p class="text-sm text-zinc-300 mt-2 body"></p>
+      </article>
+    </template>
+
+    <template id="fleetTemplate">
+      <article class="rounded-2xl border border-zinc-700 bg-zinc-900/65 p-4">
+        <div class="h-32 rounded-xl mb-3 fleet-art flex items-center justify-center"></div>
+        <h3 class="font-display text-lg"></h3>
+        <p class="text-sm text-zinc-300"></p>
+      </article>
+    </template>
+
+    <script src="./script.js"></script>
+  </body>
 </html>
